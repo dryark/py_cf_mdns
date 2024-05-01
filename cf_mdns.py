@@ -58,7 +58,7 @@ def get_service_info(iface_name):
     if not isinstance(sock, socket.socket):
             raise RuntimeError("Failed to create socket")
             
-    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 20)
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 1)
     
     #print( f'sending mdns query to {iface_name}' )
     iface_index = socket.if_nametoindex(iface_name)
@@ -77,12 +77,16 @@ def get_service_info(iface_name):
             b"\x00\x01"  # class IN
         )
         sock.sendto(dns_header + dns_question, mdns_addr)
-        response, source_address = sock.recvfrom(1024)
-        #print( f'got mdns answer from {iface_name}' )
-        source_ipv6 = source_address[0]
-        answers = response_to_service_names(response)
-        for answer in answers:
-            answerSet.add( answer )
+        for _ in range(6):
+            response, source_address = sock.recvfrom(1024)
+            #print( f'got mdns answer from {iface_name}' )
+            source_ipv6 = source_address[0]
+            answers = response_to_service_names(response)
+            if 'remoted' not in answers:
+                continue
+            for answer in answers:
+                answerSet.add( answer )
+            break
         #print( f'{iface_name} answers {answers}' )
     except TimeoutError:
         #print( f'timeout getting mdns answer from {iface_name}' )
