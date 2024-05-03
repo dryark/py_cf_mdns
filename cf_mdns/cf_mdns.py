@@ -1,8 +1,12 @@
 # Copyright (c) 2024 Dry Ark LLC
-# Anti-Corruption License
+# License AGPL
 import socket
 import struct
 from cf_iface import get_potential_remoted_ifaces
+from typing import (
+    List,
+    Optional,
+)
 
 def decode_labels(message, offset):
     labels = []
@@ -98,10 +102,15 @@ def get_service_info(iface_name):
         'ipv6': source_ipv6,
     }
 
-def get_remoted_interfaces( ios17only: bool ):
+def get_remoted_interfaces(
+    ios17only: bool,
+    exclude_ens: Optional[List[str]] = [],
+):
     potential_ifaces = get_potential_remoted_ifaces()
     result = []
     for iface in potential_ifaces:
+        if iface in exclude_ens:
+            continue
         service_info = get_service_info( iface )
         services = service_info['services']
         if "remoted" in services:
