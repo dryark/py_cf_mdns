@@ -86,6 +86,7 @@ def get_service_info(iface_name):
             #print( f'got mdns answer from {iface_name}' )
             source_ipv6 = source_address[0]
             answers = response_to_service_names(response)
+            # print(repr(answers))
             if 'remoted' not in answers:
                 continue
             for answer in answers:
@@ -115,7 +116,7 @@ def get_remoted_interfaces(
         services = service_info['services']
         if "remoted" in services:
             hasRemotePairing = False
-            if "remotepairing" in services:
+            if "remotepairing" in services or "remotepairing-tunnel" in services:
                 hasRemotePairing = True
             if not ios17only or hasRemotePairing:
                 result.append({
